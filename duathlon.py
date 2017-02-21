@@ -2,6 +2,7 @@ import csv
 import matplotlib.pyplot as plt
 from scipy.optimize import curve_fit
 
+
 def straight_line(x, m, c):
 	y = m*x + c
 	return y
@@ -11,6 +12,8 @@ list2 = []
 list3 = []
 total = []
 gender = []
+t1 = []
+t2 = []
 
 f = open("chilly_duathlon.csv", 'rU')
 next(f)
@@ -21,18 +24,40 @@ for row in reader:
     list3.append(str(row[20]))
     total.append(str(row[6]))
     gender.append(str(row[9]))
+    t1.append(str(row[16]))
+    t2.append(str(row[19]))
 f.close()
+
 
 list1 = [list1[i] for i in range(0, len(total)) if total[i] != "DNF"]
 list2 = [list2[i] for i in range(0, len(total)) if total[i] != "DNF"]
 list3 = [list3[i] for i in range(0, len(total)) if total[i] != "DNF"]
 total = [total[i] for i in range(0, len(total)) if total[i] != "DNF"]
+gender = [gender[i] for i in range(0, len(total)) if total[i] != "DNF"]
+t1 = [t1[i] for i in range(0, len(total)) if total[i] != "DNF"]
+t2 = [t2[i] for i in range(0, len(total)) if total[i] != "DNF"]
 
 
 run1 = [(60*float(list1[i][:2]) + float(list1[i][3:5]))/60.0 for i in range(0, len(list1))]
 ride = [(60*float(list2[i][:2]) + float(list2[i][3:5]))/60.0 for i in range(0, len(list2))]
 run2 = [(60*float(list3[i][:2]) + float(list3[i][3:5]))/60.0 for i in range(0, len(list3))]
 total = [(60*float(total[i][:2]) + float(total[i][3:5]))/60.0 for i in range(0, len(total))]
+
+t1_new = []
+for i in range(0, len(t1)):
+	if ":" not in t1[i]:
+		t1_new.append(float(t1[i][:2])/60.0)
+	else:
+		t1_new.append((float(t1[i][:2])*60 + float(t1[i][3:5]))/60.0)
+t1 = t1_new
+
+t2_new = []
+for i in range(0, len(t2)):
+	if ":" not in t2[i]:
+		t2_new.append(float(t2[i][:2])/60.0)
+	else:
+		t2_new.append((float(t2[i][:2])*60 + float(t2[i][3:5]))/60.0)
+t2 = t2_new
 
 total_new = []
 for i in total:
@@ -41,6 +66,32 @@ for i in total:
 	else:
 		total_new.append(i)
 total = total_new
+
+splits = []
+split_totals = []
+for i in range(0, len(total)):
+	splits.append([run1[i], t1[i], ride[i], t2[i], run2[i]])
+	split_totals.append([run1[i], run1[i] + t1[i], run1[i] + t1[i] + ride[i], run1[i] + t1[i] + ride[i] + t2[i], run1[i] + t1[i] + ride[i] + t2[i] + run2[i]])
+
+differences = []
+for i in range(1, len(splits)):
+	diff = [(x - y) for x, y in zip(split_totals[0], split_totals[i])]
+	differences.append(diff)
+
+split_totals = [[0] + i for i in split_totals]
+differences = [[0] + i for i in differences]
+markers = [(split_totals[0][i]+ split_totals[0][i+1])/2 for i in range(0, len(split_totals[0])-1)]
+
+plt.plot(split_totals[0], [0, 0, 0, 0, 0, 0])
+for i in range(0, 100):
+	plt.plot(split_totals[0], differences[i])
+plt.xlim(xmin = 0)
+plt.yticks([2, 0, -2, -4, -6, -8, -10, -12, -14], [-2, 0, 2, 4, 6, 8, 10, 12, 14])
+plt.ylabel("Time behind winner (mins)")
+plt.xticks(markers, ["Run 1", "T1", "Ride", "T2", "Run2"])
+plt.show()
+plt.clf()
+
 
 
 popt12, pcov12 = curve_fit(straight_line, run1, ride)
@@ -130,8 +181,12 @@ plt.ylabel("run2 (mins)")
 
 
 
-plt.savefig("duathlon_analysis")
-plt.show()
+
+
+#plt.savefig("duathlon_analysis")
+#plt.show()
+
+
 
 
 
