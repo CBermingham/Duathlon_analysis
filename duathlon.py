@@ -83,12 +83,14 @@ differences = [[0] + i for i in differences]
 markers = [(split_totals[0][i]+ split_totals[0][i+1])/2 for i in range(0, len(split_totals[0])-1)]
 
 plt.plot(split_totals[0], [0, 0, 0, 0, 0, 0])
-for i in range(0, 100):
+for i in range(0, 50):
 	plt.plot(split_totals[0], differences[i])
+plt.plot(split_totals[0], differences[169], linewidth = 5)
 plt.xlim(xmin = 0)
 plt.yticks([2, 0, -2, -4, -6, -8, -10, -12, -14], [-2, 0, 2, 4, 6, 8, 10, 12, 14])
 plt.ylabel("Time behind winner (mins)")
 plt.xticks(markers, ["Run 1", "T1", "Ride", "T2", "Run2"])
+plt.savefig("Split_analyser")
 plt.show()
 plt.clf()
 
